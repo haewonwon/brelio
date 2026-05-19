@@ -1,5 +1,6 @@
 import AppHeader from '../components/AppHeader';
 import EmptyState from '../components/EmptyState';
+import Card from '../components/ui/Card';
 
 function HomePage() {
   return (
@@ -9,7 +10,14 @@ function HomePage() {
         description="경제 뉴스를 읽고, 요약하고, 메모하며 매일 공부를 기록하는 서비스"
       />
 
-      <main className="mt-5">
+      <main className="mt-5 grid gap-4 sm:gap-5">
+        <Card className="bg-gradient-to-r from-brelio-primary/10 to-brelio-secondary/10">
+          <p className="m-0 text-sm font-semibold text-brelio-primary">오늘의 학습 포커스</p>
+          <p className="m-0 mt-2 text-lg font-semibold text-brelio-text">
+            핵심 뉴스 1개를 읽고 3줄 요약을 남겨보세요.
+          </p>
+        </Card>
+
         <EmptyState />
       </main>
     </div>
