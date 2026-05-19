@@ -8,14 +8,16 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  passwordHash String
-  name         String?
-  notes        ArticleNote[]
-  dailyLogs    DailyLog[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id              String        @id @default(cuid())
+  email           String        @unique
+  googleId        String?       @unique
+  passwordHash    String?
+  name            String?
+  profileImageUrl String?
+  notes           ArticleNote[]
+  dailyLogs       DailyLog[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 model Article {
