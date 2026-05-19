@@ -1,9 +1,7 @@
+import HomePage from './pages/HomePage';
+
 function App() {
-  return (
-    <main>
-      <h1>Economy News Tracker</h1>
-    </main>
-  );
+  return <HomePage />;
 }
 
 export default App;
