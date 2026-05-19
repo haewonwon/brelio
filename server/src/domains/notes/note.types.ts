@@ -7,11 +7,13 @@ export type NoteResponse = {
 };
 
 export type UpsertArticleNoteInput = {
+  userId: string;
   articleId: string;
   content: string;
 };
 
 export type UpdateNoteInput = {
+  userId: string;
   noteId: string;
   content: string;
 };

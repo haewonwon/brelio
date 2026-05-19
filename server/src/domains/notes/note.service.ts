@@ -1,5 +1,4 @@
 import { prisma } from '../../lib/prisma.js';
-import { ensureTemporaryUser, TEMP_USER_ID } from '../../lib/tempUser.js';
 import { AppError } from '../../middlewares/error.middleware.js';
 import { completeTodayDailyLog } from '../dailyLogs/dailyLog.service.js';
 import type {
@@ -32,6 +31,7 @@ async function ensureArticleExists(articleId: string) {
 }
 
 export async function getArticleNote(
+  userId: string,
   articleId: string,
 ): Promise<NoteResponse> {
   await ensureArticleExists(articleId);
@@ -39,7 +39,7 @@ export async function getArticleNote(
   const note = await prisma.articleNote.findUnique({
     where: {
       userId_articleId: {
-        userId: TEMP_USER_ID,
+        userId,
         articleId,
       },
     },
@@ -54,16 +54,16 @@ export async function getArticleNote(
 }
 
 export async function upsertArticleNote({
+  userId,
   articleId,
   content,
 }: UpsertArticleNoteInput): Promise<NoteResponse> {
   await ensureArticleExists(articleId);
-  await ensureTemporaryUser();
 
   const note = await prisma.articleNote.upsert({
     where: {
       userId_articleId: {
-        userId: TEMP_USER_ID,
+        userId,
         articleId,
       },
     },
@@ -71,26 +71,27 @@ export async function upsertArticleNote({
       content,
     },
     create: {
-      userId: TEMP_USER_ID,
+      userId,
       articleId,
       content,
     },
     select: noteSelect,
   });
 
-  await completeTodayDailyLog();
+  await completeTodayDailyLog(userId);
 
   return note;
 }
 
 export async function updateNote({
+  userId,
   noteId,
   content,
 }: UpdateNoteInput): Promise<NoteResponse> {
   const note = await prisma.articleNote.findFirst({
     where: {
       id: noteId,
-      userId: TEMP_USER_ID,
+      userId,
     },
     select: {
       id: true,
@@ -111,16 +112,16 @@ export async function updateNote({
     select: noteSelect,
   });
 
-  await completeTodayDailyLog();
+  await completeTodayDailyLog(userId);
 
   return updatedNote;
 }
 
-export async function deleteNote(noteId: string): Promise<void> {
+export async function deleteNote(userId: string, noteId: string): Promise<void> {
   const note = await prisma.articleNote.findFirst({
     where: {
       id: noteId,
-      userId: TEMP_USER_ID,
+      userId,
     },
     select: {
       id: true,

@@ -8,6 +8,7 @@ import {
 } from './note.service.js';
 import type { NoteResponse } from './note.types.js';
 import type { SuccessResponse } from '../articles/article.types.js';
+import { AppError } from '../../middlewares/error.middleware.js';
 
 type ArticleNoteParams = {
   articleId: string;
@@ -25,11 +26,22 @@ type DeleteNoteResponse = {
   deleted: true;
 };
 
+function getAuthenticatedUserId(request: Request) {
+  if (!request.user) {
+    throw new AppError(401, 'Authentication is required');
+  }
+
+  return request.user.id;
+}
+
 export async function handleGetArticleNote(
   request: Request<ArticleNoteParams>,
   response: Response<SuccessResponse<NoteResponse>>,
 ) {
-  const note = await getArticleNote(request.params.articleId);
+  const note = await getArticleNote(
+    getAuthenticatedUserId(request),
+    request.params.articleId,
+  );
 
   response.status(200).json({
     success: true,
@@ -42,6 +54,7 @@ export async function handleUpsertArticleNote(
   response: Response<SuccessResponse<NoteResponse>>,
 ) {
   const note = await upsertArticleNote({
+    userId: getAuthenticatedUserId(request),
     articleId: request.params.articleId,
     content: request.body.content,
   });
@@ -57,6 +70,7 @@ export async function handleUpdateNote(
   response: Response<SuccessResponse<NoteResponse>>,
 ) {
   const note = await updateNote({
+    userId: getAuthenticatedUserId(request),
     noteId: request.params.noteId,
     content: request.body.content,
   });
@@ -71,7 +85,7 @@ export async function handleDeleteNote(
   request: Request<NoteParams>,
   response: Response<SuccessResponse<DeleteNoteResponse>>,
 ) {
-  await deleteNote(request.params.noteId);
+  await deleteNote(getAuthenticatedUserId(request), request.params.noteId);
 
   response.status(200).json({
     success: true,

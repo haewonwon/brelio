@@ -1,5 +1,4 @@
 import { prisma } from '../../lib/prisma.js';
-import { ensureTemporaryUser, TEMP_USER_ID } from '../../lib/tempUser.js';
 import type {
   DailyLogResponse,
   StreakResponse,
@@ -33,10 +32,10 @@ function getLocalDateKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-async function getCompletedNoteDateKeys() {
+async function getCompletedNoteDateKeys(userId: string) {
   const notes = await prisma.articleNote.findMany({
     where: {
-      userId: TEMP_USER_ID,
+      userId,
     },
     select: {
       createdAt: true,
@@ -54,21 +53,19 @@ async function getCompletedNoteDateKeys() {
   return dateKeys;
 }
 
-async function syncDailyLogsFromNotes() {
-  const dateKeys = await getCompletedNoteDateKeys();
+async function syncDailyLogsFromNotes(userId: string) {
+  const dateKeys = await getCompletedNoteDateKeys(userId);
 
   if (dateKeys.size === 0) {
     return;
   }
-
-  await ensureTemporaryUser();
 
   for (const dateKey of dateKeys) {
     const date = getLocalDateStart(new Date(`${dateKey}T00:00:00`));
     const existingDailyLog = await prisma.dailyLog.findUnique({
       where: {
         userId_date: {
-          userId: TEMP_USER_ID,
+          userId,
           date,
         },
       },
@@ -80,7 +77,7 @@ async function syncDailyLogsFromNotes() {
     if (!existingDailyLog) {
       await prisma.dailyLog.create({
         data: {
-          userId: TEMP_USER_ID,
+          userId,
           date,
           completed: true,
           completedAt: new Date(),
@@ -93,7 +90,7 @@ async function syncDailyLogsFromNotes() {
       await prisma.dailyLog.update({
         where: {
           userId_date: {
-            userId: TEMP_USER_ID,
+            userId,
             date,
           },
         },
@@ -106,15 +103,15 @@ async function syncDailyLogsFromNotes() {
   }
 }
 
-export async function completeTodayDailyLog(): Promise<TodayDailyLogResponse> {
-  await ensureTemporaryUser();
-
+export async function completeTodayDailyLog(
+  userId: string,
+): Promise<TodayDailyLogResponse> {
   const today = getLocalDateStart();
   const completedAt = new Date();
   const dailyLog = await prisma.dailyLog.upsert({
     where: {
       userId_date: {
-        userId: TEMP_USER_ID,
+        userId,
         date: today,
       },
     },
@@ -123,7 +120,7 @@ export async function completeTodayDailyLog(): Promise<TodayDailyLogResponse> {
       completedAt,
     },
     create: {
-      userId: TEMP_USER_ID,
+      userId,
       date: today,
       completed: true,
       completedAt,
@@ -138,12 +135,12 @@ export async function completeTodayDailyLog(): Promise<TodayDailyLogResponse> {
   return dailyLog;
 }
 
-export async function getDailyLogs(): Promise<DailyLogResponse[]> {
-  await syncDailyLogsFromNotes();
+export async function getDailyLogs(userId: string): Promise<DailyLogResponse[]> {
+  await syncDailyLogsFromNotes(userId);
 
   return prisma.dailyLog.findMany({
     where: {
-      userId: TEMP_USER_ID,
+      userId,
     },
     orderBy: {
       date: 'desc',
@@ -152,14 +149,16 @@ export async function getDailyLogs(): Promise<DailyLogResponse[]> {
   });
 }
 
-export async function getTodayDailyLog(): Promise<TodayDailyLogResponse> {
-  await syncDailyLogsFromNotes();
+export async function getTodayDailyLog(
+  userId: string,
+): Promise<TodayDailyLogResponse> {
+  await syncDailyLogsFromNotes(userId);
 
   const today = getLocalDateStart();
   const dailyLog = await prisma.dailyLog.findUnique({
     where: {
       userId_date: {
-        userId: TEMP_USER_ID,
+        userId,
         date: today,
       },
     },
@@ -181,12 +180,14 @@ export async function getTodayDailyLog(): Promise<TodayDailyLogResponse> {
   };
 }
 
-export async function getDailyLogStreak(): Promise<StreakResponse> {
-  await syncDailyLogsFromNotes();
+export async function getDailyLogStreak(
+  userId: string,
+): Promise<StreakResponse> {
+  await syncDailyLogsFromNotes(userId);
 
   const completedLogs = await prisma.dailyLog.findMany({
     where: {
-      userId: TEMP_USER_ID,
+      userId,
       completed: true,
     },
     orderBy: {

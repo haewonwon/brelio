@@ -12,6 +12,7 @@ import {
   noteParamsSchema,
 } from './note.schema.js';
 import { validateRequest } from '../../lib/zod.js';
+import { authMiddleware } from '../../middlewares/auth.middleware.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
 export const articleNoteRoutes = Router({
@@ -22,6 +23,7 @@ export const noteRoutes = Router();
 
 articleNoteRoutes.get(
   '/',
+  authMiddleware,
   validateRequest({
     params: articleNoteParamsSchema,
   }),
@@ -30,6 +32,7 @@ articleNoteRoutes.get(
 
 articleNoteRoutes.post(
   '/',
+  authMiddleware,
   validateRequest({
     params: articleNoteParamsSchema,
     body: noteBodySchema,
@@ -39,6 +42,7 @@ articleNoteRoutes.post(
 
 noteRoutes.patch(
   '/:noteId',
+  authMiddleware,
   validateRequest({
     params: noteParamsSchema,
     body: noteBodySchema,
@@ -48,6 +52,7 @@ noteRoutes.patch(
 
 noteRoutes.delete(
   '/:noteId',
+  authMiddleware,
   validateRequest({
     params: noteParamsSchema,
   }),

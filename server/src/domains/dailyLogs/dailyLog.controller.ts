@@ -11,12 +11,21 @@ import type {
   TodayDailyLogResponse,
 } from './dailyLog.types.js';
 import type { SuccessResponse } from '../articles/article.types.js';
+import { AppError } from '../../middlewares/error.middleware.js';
+
+function getAuthenticatedUserId(request: Request) {
+  if (!request.user) {
+    throw new AppError(401, 'Authentication is required');
+  }
+
+  return request.user.id;
+}
 
 export async function handleGetDailyLogs(
-  _request: Request,
+  request: Request,
   response: Response<SuccessResponse<DailyLogResponse[]>>,
 ) {
-  const dailyLogs = await getDailyLogs();
+  const dailyLogs = await getDailyLogs(getAuthenticatedUserId(request));
 
   response.status(200).json({
     success: true,
@@ -25,10 +34,10 @@ export async function handleGetDailyLogs(
 }
 
 export async function handleGetTodayDailyLog(
-  _request: Request,
+  request: Request,
   response: Response<SuccessResponse<TodayDailyLogResponse>>,
 ) {
-  const dailyLog = await getTodayDailyLog();
+  const dailyLog = await getTodayDailyLog(getAuthenticatedUserId(request));
 
   response.status(200).json({
     success: true,
@@ -37,10 +46,10 @@ export async function handleGetTodayDailyLog(
 }
 
 export async function handleGetDailyLogStreak(
-  _request: Request,
+  request: Request,
   response: Response<SuccessResponse<StreakResponse>>,
 ) {
-  const streak = await getDailyLogStreak();
+  const streak = await getDailyLogStreak(getAuthenticatedUserId(request));
 
   response.status(200).json({
     success: true,
