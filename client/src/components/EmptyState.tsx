@@ -1,11 +1,21 @@
+import Button from './ui/Button';
+import Card from './ui/Card';
+
 function EmptyState() {
   return (
-    <section className="empty-state" aria-live="polite">
-      <h2 className="empty-state__title">아직 등록된 뉴스가 없습니다</h2>
-      <p className="empty-state__description">
-        첫 경제 기사를 불러오면 이 영역에서 요약과 학습 기록을 확인할 수 있어요.
-      </p>
-    </section>
+    <Card>
+      <div className="flex flex-col gap-3">
+        <h2 className="m-0 text-2xl font-bold leading-snug text-brelio-text">
+          아직 등록된 뉴스가 없습니다
+        </h2>
+        <p className="m-0 text-base leading-relaxed text-brelio-muted">
+          오늘의 경제 뉴스를 불러오면 이 공간에서 요약을 읽고 학습 메모를 남길 수 있어요.
+        </p>
+        <div className="pt-2">
+          <Button>첫 학습 화면 둘러보기</Button>
+        </div>
+      </div>
+    </Card>
   );
 }
 
