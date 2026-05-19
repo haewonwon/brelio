@@ -13,15 +13,15 @@ export function validateRequest(schema: RequestValidationSchema): RequestHandler
   return (request, _response, next) => {
     try {
       if (schema.params) {
-        schema.params.parse(request.params);
+        request.params = schema.params.parse(request.params) as typeof request.params;
       }
 
       if (schema.query) {
-        schema.query.parse(request.query);
+        request.query = schema.query.parse(request.query) as typeof request.query;
       }
 
       if (schema.body) {
-        schema.body.parse(request.body);
+        request.body = schema.body.parse(request.body);
       }
 
       next();
