@@ -1,7 +1,7 @@
 function App() {
   return (
     <main>
-      <h1>Economy News Tracker</h1>
+      <h1>Brelio</h1>
     </main>
   );
 }

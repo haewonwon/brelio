@@ -1,4 +1,4 @@
-# Economy News Tracker
+# Brelio
 
 경제 뉴스를 매일 읽고, 요약과 생각을 기록하며 학습 여부를 트래킹하는 서비스입니다.
 
@@ -10,4 +10,5 @@
 
 ## Docs
 
+- [API Spec](docs/api-spec.md)
 - [Frontend Guide](docs/frontend-guide.md)
