@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 
 import { articleRoutes } from './domains/articles/article.routes.js';
+import { dailyLogRoutes } from './domains/dailyLogs/dailyLog.routes.js';
 import {
   articleNoteRoutes,
   noteRoutes,
@@ -18,6 +19,7 @@ app.use(express.json());
 
 app.use('/api/articles/:articleId/note', articleNoteRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api/daily-logs', dailyLogRoutes);
 app.use('/api/notes', noteRoutes);
 
 app.use(notFoundMiddleware);

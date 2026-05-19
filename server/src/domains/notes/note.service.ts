@@ -1,12 +1,12 @@
 import { prisma } from '../../lib/prisma.js';
+import { ensureTemporaryUser, TEMP_USER_ID } from '../../lib/tempUser.js';
 import { AppError } from '../../middlewares/error.middleware.js';
+import { completeTodayDailyLog } from '../dailyLogs/dailyLog.service.js';
 import type {
   NoteResponse,
   UpdateNoteInput,
   UpsertArticleNoteInput,
 } from './note.types.js';
-
-const TEMP_USER_ID = 'temp-user';
 
 const noteSelect = {
   id: true,
@@ -15,21 +15,6 @@ const noteSelect = {
   createdAt: true,
   updatedAt: true,
 } as const;
-
-async function ensureTemporaryUser() {
-  await prisma.user.upsert({
-    where: {
-      id: TEMP_USER_ID,
-    },
-    update: {},
-    create: {
-      id: TEMP_USER_ID,
-      email: 'temp-user@brelio.local',
-      passwordHash: 'temporary-password-hash',
-      name: 'Temporary User',
-    },
-  });
-}
 
 async function ensureArticleExists(articleId: string) {
   const article = await prisma.article.findUnique({
@@ -75,7 +60,7 @@ export async function upsertArticleNote({
   await ensureArticleExists(articleId);
   await ensureTemporaryUser();
 
-  return prisma.articleNote.upsert({
+  const note = await prisma.articleNote.upsert({
     where: {
       userId_articleId: {
         userId: TEMP_USER_ID,
@@ -92,6 +77,10 @@ export async function upsertArticleNote({
     },
     select: noteSelect,
   });
+
+  await completeTodayDailyLog();
+
+  return note;
 }
 
 export async function updateNote({
@@ -112,7 +101,7 @@ export async function updateNote({
     throw new AppError(404, 'Note not found');
   }
 
-  return prisma.articleNote.update({
+  const updatedNote = await prisma.articleNote.update({
     where: {
       id: noteId,
     },
@@ -121,6 +110,10 @@ export async function updateNote({
     },
     select: noteSelect,
   });
+
+  await completeTodayDailyLog();
+
+  return updatedNote;
 }
 
 export async function deleteNote(noteId: string): Promise<void> {
