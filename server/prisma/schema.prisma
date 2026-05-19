@@ -6,3 +6,52 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  name         String?
+  notes        ArticleNote[]
+  dailyLogs    DailyLog[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Article {
+  id          String        @id @default(cuid())
+  title       String
+  summary     String?
+  url         String        @unique
+  source      String?
+  publishedAt DateTime?
+  notes       ArticleNote[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ArticleNote {
+  id        String   @id @default(cuid())
+  userId    String
+  articleId String
+  content   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, articleId])
+}
+
+model DailyLog {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, date])
+}
